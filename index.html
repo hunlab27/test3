@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psychology Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin-bottom: 10px;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Psychology Test</h1>
+        <form id="psychology-test">
+            <!-- Questions will be generated here dynamically -->
+        </form>
+        <button id="submit-button">Submit Results</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script>
+        const questions = [
+            "Question 1: I easily make friends with new people.",
+            "Question 2: I openly express my emotions.",
+            "Question 3: I set goals and work hard to achieve them.",
+            "Question 4: I get stressed easily.",
+            "Question 5: I like to plan and follow schedules.",
+            "Question 6: I enjoy challenges.",
+            "Question 7: I understand other people's emotions well.",
+            "Question 8: I need time alone to recharge.",
+            "Question 9: I like to think of new ideas.",
+            "Question 10: I actively participate in teamwork."
+        ];
+
+        const options = [
+            "Strongly Agree",
+            "Agree",
+            "Neutral",
+            "Disagree",
+            "Strongly Disagree"
+        ];
+
+        const form = document.getElementById('psychology-test');
+
+        questions.forEach((question, index) => {
+            const questionContainer = document.createElement('div');
+            questionContainer.classList.add('question');
+
+            const questionLabel = document.createElement('label');
+            questionLabel.textContent = question;
+            questionLabel.setAttribute('for', `q${index + 1}`);
+
+            questionContainer.appendChild(questionLabel);
+
+            const optionsList = document.createElement('ul');
+            optionsList.classList.add('options');
+
+            options.forEach((option, optIndex) => {
+                const optionItem = document.createElement('li');
+
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.id = `q${index + 1}_opt${optIndex + 1}`;
+                input.name = `q${index + 1}`;
+                input.value = optIndex + 1;
+
+                const label = document.createElement('label');
+                label.setAttribute('for', input.id);
+                label.textContent = option;
+
+                optionItem.appendChild(input);
+                optionItem.appendChild(label);
+                optionsList.appendChild(optionItem);
+            });
+
+            questionContainer.appendChild(optionsList);
+            form.appendChild(questionContainer);
+        });
+
+        document.getElementById('submit-button').addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const answers = {};
+            let totalScore = 0;
+            let allAnswered = true;
+
+            questions.forEach((_, index) => {
+                const answer = formData.get(`q${index + 1}`);
+                if (!answer) {
+                    allAnswered = false;
+                }
+                const score = answer ? parseInt(answer, 10) : 0;
+                answers[`q${index + 1}`] = score;
+                totalScore += score;
+            });
+
+            if (!allAnswered) {
+                alert("끝까지 해라");
+                return;
+            }
+
+            const averageScore = (totalScore / questions.length).toFixed(2);
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+
+            pdf.setFontSize(16);
+            pdf.text("Psychology Test Results", 20, 20);
+
+            let yOffset = 30;
+
+            questions.forEach((question, index) => {
+                pdf.setFontSize(12);
+                pdf.text(`${index + 1}. ${question}`, 20, yOffset);
+                yOffset += 10;
+                pdf.setFontSize(10);
+                pdf.text(`Score: ${answers[`q${index + 1}`]}`, 20, yOffset);
+                yOffset += 10;
+            });
+
+            yOffset += 10;
+            pdf.setFontSize(12);
+            pdf.text(`Total Score: ${totalScore}`, 20, yOffset);
+            yOffset += 10;
+            pdf.text(`Average Score: ${averageScore}`, 20, yOffset);
+
+            pdf.save("Psychology_Test_Results.pdf");
+        });
+
+    </script>
+</body>
+</html>
